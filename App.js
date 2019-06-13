@@ -2,19 +2,15 @@ import React, { Component } from 'react';
 import { AppRegistry, View, Text, StyleSheet } from 'react-native';
 import Button from 'react-native-button';
 
+const numberOfQuestion = 10;
+const countDownTime = 5000;
 class Score extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      rightAns: 0,
-      wrongAns: 0
-    }
-  }
   render() {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={styles.rightAnswer}>Right Anwsers: {this.state.rightAns}</Text>
-        <Text style={styles.wrongAnswer}>Wrong Anwsers: {this.state.wrongAns}</Text>
+        <Text style={styles.rightAnswer}>Right Anwsers: {this.props.rightAns}</Text>
+        <Text style={styles.wrongAnswer}>Wrong Anwsers: {this.props.wrongAns}</Text>
+        <Text style={styles.wrongAnswer}>Question: {this.props.current}</Text>
       </View>
     )
   }
@@ -38,10 +34,11 @@ export default class Board extends Component {
     this.state = {
       start: false,
       finished: false,
-      pause: false,
+      currentQuestion: 0,
+      rightAnswers: 0,
+      wrongAnswers: 0,
       didAnswer: false,
       choices: [],
-      answer: 0, // answer take value [0, 1, 2] => [not answer, right, wrong]
       firstNumber: getRandomNumberInRange(1, 10),
       secondNumber: getRandomNumberInRange(1, 10),
       wherePressed: [0, 0, 0, 0],
@@ -57,13 +54,9 @@ export default class Board extends Component {
     answers.push(_firstNumber * _secondNumber, _firstNumber * (_secondNumber + 1), _firstNumber * (_secondNumber + 2), _firstNumber * (_secondNumber - 1));
     answers = shuffle(answers);
     this.setState({
+      currentQuestion: ++this.state.currentQuestion,
       firstNumber: _firstNumber,
       secondNumber: _secondNumber,
-      firstAns: answers[0],
-      secondAns: answers[1],
-      thirdAns: answers[2],
-      lastAns: answers[3],
-      answer: 0,
       didAnswer: false,
       rightAnswer: answers.indexOf(_firstNumber * _secondNumber),
       choices: [...answers],
@@ -71,12 +64,10 @@ export default class Board extends Component {
       isRight: false,
     })
   }
-  _checkAnswer(event, answer) {
-    // console.log('Checking answer');
-    // checking where press the button
+  _getPressedPosition(userAnswer) {
     var temp = this.state.wherePressed;
     for (let i = 0; i < this.state.choices.length; i++) {
-      if (this.state.choices[i] == answer) {
+      if (this.state.choices[i] == userAnswer) {
         temp[i] = 1;
         this.setState({
           wherePressed: temp,
@@ -84,63 +75,43 @@ export default class Board extends Component {
         break;
       }
     }
-    if (this.state.firstNumber * this.state.secondNumber === answer) {
+  }
+  _checkAnswer(event, userAnswer) {
+    // console.log('Checking answer');
+    // checking where press the button
+    this._getPressedPosition(userAnswer); // get where user press in [A,B,C,D] before continue
+    if (this.state.firstNumber * this.state.secondNumber === userAnswer) {
       this.setState({
         didAnswer: true,
-        answer: 1,
         isRight: true,
+        rightAnswers: ++this.state.rightAnswers,
       })
     }
     else {
       this.setState({
         didAnswer: true,
-        answer: 2,
         isRight: false,
+        wrongAnswers: ++this.state.wrongAnswers,
       })
     }
-    console.log(this.state.wherePressed);
-    console.log('right answer: ', this.state.rightAnswer);
   }
   _getRandomQuestion() {
     var a = getRandomNumberInRange(1, 10), b = getRandomNumberInRange(1, 10);
     this._setAnswers(a, b);
   }
   _getStyle(index) {
-    var style;
-    if (!this.state.didAnswer) {
-      style = styles.answerBtn;
+    if ((this.state.isRight && this.state.wherePressed[index] == 1) || (this.state.rightAnswer == index && this.state.didAnswer)) {
+      return styles.rightBtn;
     }
-    else if (this.state.wherePressed[index] == 1) {
-      if (this.state.isRight) {
-        style = styles.rightBtn;
-      }
-      else if (this.state.rightAnswer == index) {
-        style = styles.rightBtn;
-      }
-      else {
-        style = styles.wrongBtn;
-      }
+    if (this.state.wherePressed[index] == 1 && this.state.didAnswer) {
+      return styles.wrongBtn;
     }
-    else if (this.state.wherePressed[index] == 0) {
-      if (this.state.rightAnswer == index) {
-        style = styles.rightBtn;
-      }
-      else {
-        style = styles.answerBtn;
-      }
-    }
-    else {
-      style = styles.answerBtn;
-    }
-    return style;
+    return styles.answerBtn;
   }
   render() {
     return (
-      // Try removing the `flex: 1` on the parent View.
-      // The parent will not have dimensions, so the children can't expand.
-      // What if you add `height: 300` instead of `flex: 1`?
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Score />
+        <Score current={this.state.currentQuestion} rightAns={this.state.rightAnswers} wrongAns={this.state.wrongAnswers} />
         <Panel firstNumber={this.state.firstNumber} secondNumber={this.state.secondNumber} />
 
         <View style={{ flex: 2, }}>
@@ -149,27 +120,27 @@ export default class Board extends Component {
             <Button
               containerStyle={this._getStyle(0)}
               style={styles.textBtn}
-              onPress={(event) => { this._checkAnswer(event, this.state.firstAns) }}
+              onPress={(event) => { this._checkAnswer(event, this.state.choices[0]) }}
               disabled={this.state.didAnswer} >
-              {this.state.firstAns}
+              {this.state.choices[0]}
             </Button>
 
             <Button containerStyle={this._getStyle(1)}
               style={styles.textBtn}
-              onPress={(event) => { this._checkAnswer(event, this.state.secondAns) }} disabled={this.state.didAnswer} >{this.state.secondAns}</Button>
+              onPress={(event) => { this._checkAnswer(event, this.state.choices[1]) }} disabled={this.state.didAnswer} >{this.state.choices[1]}</Button>
 
             <Button containerStyle={this._getStyle(2)}
               style={styles.textBtn}
-              onPress={(event) => { this._checkAnswer(event, this.state.thirdAns) }} disabled={this.state.didAnswer} >{this.state.thirdAns}</Button>
+              onPress={(event) => { this._checkAnswer(event, this.state.choices[2]) }} disabled={this.state.didAnswer} >{this.state.choices[2]}</Button>
 
             <Button containerStyle={this._getStyle(3)}
               style={styles.textBtn}
-              onPress={(event) => { this._checkAnswer(event, this.state.lastAns) }} disabled={this.state.didAnswer} >{this.state.lastAns}</Button>
+              onPress={(event) => { this._checkAnswer(event, this.state.choices[3]) }} disabled={this.state.didAnswer} >{this.state.choices[3]}</Button>
           </View>
         </View>
 
         <View style={{ flex: 1, flexDirection: 'row' }} >
-          <Button containerStyle={styles.nextBtn} style={styles.textBtn} onPress={() => this._getRandomQuestion()}>
+          <Button containerStyle={styles.nextBtn} style={styles.textBtn} disabled={!this.state.didAnswer} onPress={() => this._getRandomQuestion()}>
             Next
           </Button>
         </View>
