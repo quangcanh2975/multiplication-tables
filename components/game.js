@@ -4,8 +4,8 @@ import Button from 'react-native-button';
 import styles from './styles.js';
 
 const numberOfQuestion = 10;
-const countDownTime = 5000;
-
+const countDownTime = 3000;
+var setTimeOutFunction;
 class Score extends Component {
   render() {
     return (
@@ -22,7 +22,7 @@ class Panel extends Component {
   render() {
     return (
       <View style={styles.flexOfView}>
-        <Text style={[{backgroundColor: '#4282c2'}, styles.panel]} >{this.props.firstNumber} x {this.props.secondNumber}</Text>
+        <Text style={[{ backgroundColor: '#4282c2' }, styles.panel]} >{this.props.firstNumber} x {this.props.secondNumber}</Text>
       </View>
     )
   }
@@ -37,6 +37,7 @@ export default class Board extends Component {
       wrongAnswers: 0,
       didAnswer: false,
       choices: [],
+      isTimer: false, //this.props.navigation.getParam('timer', false),
       firstNumber: getRandomNumberInRange(1, 10),
       secondNumber: getRandomNumberInRange(1, 10),
       wherePressed: [0, 0, 0, 0],
@@ -44,18 +45,28 @@ export default class Board extends Component {
       rightAnswer: -1,
     }
   }
-  componentDidMount(previousProps) {
+  componentDidMount() {
     this._setAnswers(0, this.state.firstNumber, this.state.secondNumber);
+    this.autoMode();
   }
-  componentDidUpdate() {
-    this._finishGame();
+
+
+  _getRandomQuestion() {
+    if (this.state.currentQuestion === numberOfQuestion) {
+      this.props.navigation.navigate('Result', {
+        rightAnswers: this.state.rightAnswers,
+        wrongAnswers: this.state.wrongAnswers,
+      })
+      this._setAnswers(0, this.state.firstNumber, this.state.secondNumber);
+      return;
+    }
+    // Below is finishGame
+    var a = getRandomNumberInRange(1, 10), b = getRandomNumberInRange(1, 10);
+    this._setAnswers(1, a, b);
   }
-  componentWillUpdate() {
-    // this._setAnswers(this.state.firstNumber, this.state.secondNumber);
-  }
+
   // option mean: 0 set all to the beginning, 1 just set in the game
   _setAnswers(option, _firstNumber, _secondNumber) {
-
     var answers = [];
     answers.push(_firstNumber * _secondNumber, _firstNumber * (_secondNumber + 1), _firstNumber * (_secondNumber + 2), _firstNumber * (_secondNumber - 1));
     answers = shuffle(answers);
@@ -85,6 +96,16 @@ export default class Board extends Component {
         isRight: false,
       })
     }
+    this.autoMode(); // moi them
+  }
+
+  autoMode() {
+    const that = this;
+    if (this.state.isTimer) {
+      setTimeOutFunction = setTimeout(function () {
+        that._checkAnswer();
+      }, countDownTime);
+    }
   }
   _getPressedPosition(userAnswer) {
     var temp = this.state.wherePressed;
@@ -101,6 +122,8 @@ export default class Board extends Component {
   _checkAnswer(event, userAnswer) {
     // console.log('Checking answer');
     // checking where press the button
+    isNewQuestion = false;
+    clearTimeout(setTimeOutFunction);
     this._getPressedPosition(userAnswer); // get where user press in [A,B,C,D] before continue
     if (this.state.firstNumber * this.state.secondNumber === userAnswer) {
       this.setState({
@@ -119,19 +142,7 @@ export default class Board extends Component {
     // checking number of question and pass params to app.js
   }
 
-  _finishGame() {
-    if (this.state.currentQuestion > numberOfQuestion) {
-      this.props.navigation.navigate('Result', {
-        rightAnswers: this.state.rightAnswers,
-        wrongAnswers: this.state.wrongAnswers,
-      })
-      this._setAnswers(0, this.state.firstNumber, this.state.secondNumber)
-    }
-  }
-  _getRandomQuestion() {
-    var a = getRandomNumberInRange(1, 10), b = getRandomNumberInRange(1, 10);
-    this._setAnswers(1, a, b);
-  }
+
   _getStyle(index) {
     if ((this.state.isRight && this.state.wherePressed[index] == 1) || (this.state.rightAnswer == index && this.state.didAnswer)) {
       return styles.rightBtn;
@@ -174,7 +185,8 @@ export default class Board extends Component {
         </View>
 
         <View style={{ flex: 1, flexDirection: 'row' }} >
-          <Button containerStyle={styles.nextBtn} style={styles.textBtn} disabled={!this.state.didAnswer} onPress={() => this._getRandomQuestion()}>
+          <Button containerStyle={styles.nextBtn} style={styles.textBtn} disabled={!this.state.didAnswer}
+            onPress={(event) => this._getRandomQuestion()} >
             Next
           </Button>
         </View>
