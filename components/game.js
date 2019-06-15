@@ -54,11 +54,11 @@ export default class Board extends Component {
       rightAnswer: -1,
     };
   }
-  componentDidMount() {
-    this._isMounted = true;
-    this._setAnswers(0, this.state.firstNumber, this.state.secondNumber);
-    console.log('Mounted');
-  }
+  // componentDidMount() {
+  //   this._isMounted = true;
+  //   this._setAnswers(0, this.state.firstNumber, this.state.secondNumber);
+  //   console.log('Mounted');
+  // }
 
   componentWillUnmount() {
     this._isMounted = false;
@@ -192,8 +192,9 @@ export default class Board extends Component {
     return (
       <View style={styles.flexOfView}>
         <NavigationEvents
-          onDidFocus={() => {
+          onWillFocus={() => {
             console.log('come back this');
+            this._isMounted = true;
             // this.setState({
             //   start: true,
             // });
