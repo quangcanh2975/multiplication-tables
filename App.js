@@ -10,10 +10,34 @@ import OptionScreen from './components/options';
 
 const AppNavigator = createStackNavigator(
   {
-    Home: HomeScreen,
-    Game: GameScreen, 
-    Options: OptionScreen,
-    Result: ResultScreen,
+    Home: {
+      screen: HomeScreen,
+      navigationOptions: () => ({
+        title: `Home`,
+        headerBackTitle: null
+      }),
+    },
+    Game: {
+      screen: GameScreen,
+      navigationOptions: () => ({
+        title: `Game`,
+
+      }),
+    },
+    Options: {
+      screen: OptionScreen,
+      navigationOptions: () => ({
+        title: `Options`,
+        headerBackTitle: null
+      }),
+    },
+    Result: {
+      screen: ResultScreen,
+      navigationOptions: () => ({
+        title: `Result`,
+        headerBackTitle: null
+      }),
+    },
   },
   {
     initialRouteName: "Home"

@@ -11,6 +11,15 @@ export default class Home extends Component {
             timer: false,
         }
     }
+    // static navigationOptions = ({ navigation }) => {
+    //     return {
+    //         headerLeft: <HeaderBackButton onPress={() => {
+    //             requestAnimationFrame(() => {
+    //                 navigation.navigate('Home');
+    //             });
+    //         }} />
+    //     };
+    // };
     render() {
         return (
             <ImageBackground source={{ uri: 'https://wallpaperstock.net/wallpapers/thumbs1/53462wide.jpg' }} style={{ width: '100%', height: '100%' }} >
