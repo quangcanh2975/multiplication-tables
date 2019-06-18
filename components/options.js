@@ -1,43 +1,65 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import Button from 'react-native-button';
 import styles from './styles.js';
 import { CheckBox } from 'react-native-elements'
+import { Icon } from 'react-native-elements'
 
 
 export default class Options extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            checked: this.props.navigation.getParam('timer'),
-            waitingTime: 3,
+            checked: this.props.navigation.getParam('timer', false),
+            seconds: this.props.navigation.getParam('waitingTime', 3),
         }
     }
 
     componentWillUnmount() {
-        this.props.navigation.navigate('Home', { timer: this.state.checked, waitingTime: this.state.waitingTime });
+        this.props.navigation.navigate('Home', { timer: this.state.checked, waitingTime: this.state.seconds });
     }
     _changeTime(option) {
+        var secondsInState = this.state.seconds;
         this.setState({
-            waitingTime: option === 0 ? --this.state.waitingTime : ++this.state.waitingTime,
+            seconds: option === 0 ? (secondsInState > 1 ? --secondsInState : 1) : (secondsInState < 5 ? ++secondsInState : 5),
         })
     }
 
     render() {
-
         return (
             <View style={{ flex: 1 }}>
                 <View style={{ flex: 1 }}>
                     <CheckBox title='Timer' checked={this.state.checked} size={40} onPress={() => {
                         this.setState({ checked: !this.state.checked })
                     }} />
-                </View>
-                <View style={{ flex: 1 }}>
-                    <Text style={[{ backgroundColor: '#4282c2' }, styles.panel]}>{this.state.waitingTime}</Text>
-                    <Button style={styles.rightBtn} onPress={(e) =>this. _changeTime(1)}>Increase</Button>
-                    <Button style={styles.wrongBtn} onPress={(e) => this._changeTime(0)}>Decrease</Button>
-                </View>
+                    <View style={[{  flexDirection: 'row',
+                                    alignItems: 'center',
+                                    margin: 5,
+                                    marginLeft: 10,
+                                    marginRight: 10,
+                                    padding: 10,
+                                    fontWeight: 'bold',
+                                    justifyContent: 'space-between',
 
+                                    }, this.state.checked ? {display: 'flex'} : {display: 'none'} ]} > 
+                        <Icon
+                            onPress={(e) => this._changeTime(0)}
+                            name='caret-down'
+                            type='font-awesome'
+                            color='#df1c3c'
+                            size={50}
+                        />   
+                        <Text style={[styles.rightAnswer, { fontSize: 20, margin: 0 }]}>{this.state.seconds} seconds</Text>
+                        <Icon
+                            onPress={(e) => this._changeTime(1)}
+                            name='caret-up'
+                            type='font-awesome'
+                            color='#1dd065'
+                            size={50}
+                        />
+                        
+                    </View>
+                </View>
             </View>
 
         )

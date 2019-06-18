@@ -5,17 +5,17 @@ import styles from './styles.js';
 import { NavigationEvents } from 'react-navigation';
 
 const numberOfQuestion = 10;
-const countDownTime = 3000;
-var setTimeOutFunction;
+
+var setTimeOutFunction; //use for clear time out
 class Score extends Component {
   render() {
     return (
       <View style={styles.flexOfView}>
         <Text style={styles.rightAnswer}>
-          Right Anwsers: {this.props.rightAns}
+          Right Answers: {this.props.rightAns}
         </Text>
         <Text style={styles.wrongAnswer}>
-          Wrong Anwsers: {this.props.wrongAns}
+          Wrong Answers: {this.props.wrongAns}
         </Text>
         <Text style={styles.wrongAnswer}>Question: {this.props.current}</Text>
       </View>
@@ -47,6 +47,7 @@ export default class Board extends Component {
       didAnswer: false,
       choices: [],
       isTimer: this.props.navigation.getParam('timer', true),
+      countDownTime: this.props.navigation.getParam('waitingTime', 3) * 1000,
       firstNumber: getRandomNumberInRange(1, 10),
       secondNumber: getRandomNumberInRange(1, 10),
       wherePressed: [0, 0, 0, 0],
@@ -54,27 +55,21 @@ export default class Board extends Component {
       rightAnswer: -1,
     };
   }
-  // componentDidMount() {
-  //   this._isMounted = true;
-  //   this._setAnswers(0, this.state.firstNumber, this.state.secondNumber);
-  //   console.log('Mounted');
-  // }
+
 
   componentWillUnmount() {
     this._isMounted = false;
-    console.log('Unmounted');
   }
   _getRandomQuestion() {
     if (this.state.currentQuestion === numberOfQuestion) {
+      this.setState({
+        start: false,
+      });
       this.props.navigation.navigate('Result', {
         rightAnswers: this.state.rightAnswers,
         wrongAnswers: this.state.wrongAnswers,
       });
-      this._setAnswers(0, this.state.firstNumber, this.state.secondNumber);
-      console.log('Stop game');
-      this.setState({
-        start: false,
-      });
+
       return;
     }
     // Below is finishGame
@@ -82,8 +77,8 @@ export default class Board extends Component {
       var a = getRandomNumberInRange(1, 10),
         b = getRandomNumberInRange(1, 10);
       this._setAnswers(1, a, b);
+      return;
     }
-
   }
 
   // option mean: 0 set all to the beginning, 1 just set in the game
@@ -108,7 +103,8 @@ export default class Board extends Component {
         wherePressed: [0, 0, 0, 0],
         isRight: false,
       });
-    } else {
+    }
+    else {
       this.setState({
         start: true,
         currentQuestion: 1,
@@ -123,18 +119,14 @@ export default class Board extends Component {
         isRight: false,
       });
     }
-
     // check answer automatically for timer this is really OK
     if (this.state.isTimer) {
-      var that = this;
-      setTimeOutFunction = setTimeout(function () {
-        if (that._isMounted) {
-          that._checkAnswer();
+      setTimeOutFunction = setTimeout(() => {
+        if (this._isMounted) {
+          this._checkAnswer();
         }
-      }, countDownTime);
+      }, this.state.countDownTime);
     }
-
-
   }
 
   _getPressedPosition(userAnswer) {
@@ -167,9 +159,8 @@ export default class Board extends Component {
         wrongAnswers: ++this.state.wrongAnswers,
       });
     }
-    var that = this;
-    setTimeout(function () {
-      that._getRandomQuestion();
+    setTimeout(() => {
+      this._getRandomQuestion();
     }, 500);
 
     // checking number of question and pass params to app.js
@@ -193,12 +184,8 @@ export default class Board extends Component {
       <View style={styles.flexOfView}>
         <NavigationEvents
           onWillFocus={() => {
-            console.log('come back this');
             this._isMounted = true;
-            // this.setState({
-            //   start: true,
-            // });
-            this._setAnswers(0, this.state.firstNumber, this.state.secondNumber);
+            this._setAnswers(0, getRandomNumberInRange(1, 10), getRandomNumberInRange(1, 10));
           }}
         />
         <Score
@@ -211,7 +198,7 @@ export default class Board extends Component {
           secondNumber={this.state.secondNumber}
         />
 
-        <View style={{ flex: 2 }}>
+        <View style={{ flex: 3 }}>
           <View
             style={{
               flex: 2,

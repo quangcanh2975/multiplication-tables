@@ -35,5 +35,8 @@ const styles = StyleSheet.create({
     color: 'white', fontWeight: 'bold', fontSize: 50, width: 350, borderRadius: 5, height: 100, alignSelf: 'center', textAlign: 'center', justifyContent: 'center',
   },
   greenBtn: { padding: 10, margin: 10, height: 50, width: 200, overflow: 'hidden', borderRadius: 4, backgroundColor: '#1dd065', color: 'white' },
+  smallBtn: {
+    height: 30, width: 30, overflow: 'hidden', borderRadius: 1, backgroundColor: '#ffae00', justifyContent: 'center', alignSelf: 'center',
+  }
 })
 export default styles;

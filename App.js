@@ -1,6 +1,3 @@
-import React, { Component } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Button from 'react-native-button';
 import { createStackNavigator, createAppContainer } from 'react-navigation';
 
 import GameScreen from './components/game';
@@ -12,31 +9,31 @@ const AppNavigator = createStackNavigator(
   {
     Home: {
       screen: HomeScreen,
-      navigationOptions: () => ({
+      navigationOptions: {
         title: `Home`,
-        headerBackTitle: null
-      }),
+        headerBackTitle: null,
+      },
     },
     Game: {
       screen: GameScreen,
-      navigationOptions: () => ({
+      navigationOptions: {
         title: `Game`,
-
-      }),
+        headerBackTitle: null,
+      },
     },
     Options: {
       screen: OptionScreen,
-      navigationOptions: () => ({
+      navigationOptions: {
         title: `Options`,
-        headerBackTitle: null
-      }),
+        headerBackTitle: null,
+      },
     },
     Result: {
       screen: ResultScreen,
-      navigationOptions: () => ({
+      navigationOptions: {
         title: `Result`,
-        headerBackTitle: null
-      }),
+        headerLeft: null,
+      },
     },
   },
   {

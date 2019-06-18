@@ -9,6 +9,7 @@ export default class Home extends Component {
         super(props);
         this.state = {
             timer: false,
+            waitingTime: 3,
         }
     }
     // static navigationOptions = ({ navigation }) => {
@@ -20,23 +21,32 @@ export default class Home extends Component {
     //         }} />
     //     };
     // };
+
     render() {
+        const { navigate } = this.props.navigation;
         return (
             <ImageBackground source={{ uri: 'https://wallpaperstock.net/wallpapers/thumbs1/53462wide.jpg' }} style={{ width: '100%', height: '100%' }} >
                 <NavigationEvents
                     onDidFocus={() => {
-                        this.setState({
-                            timer: this.props.navigation.getParam('timer'),
-                        })
+                        if(this.props.navigation.getParam('waitingTime')){
+                            this.setState({
+                                timer: this.props.navigation.getParam('timer'),
+                                waitingTime: this.props.navigation.getParam('waitingTime')
+                            })
+                        }
                     }}
                 />
                 <View style={styles.flexOfView}>
-                    <View style={{ flex: 3, justifyContent: "center", }}>
+                    <View style={{ flex: 2, justifyContent: "center", }}>
                         <Text style={{ color: 'red', fontWeight: 'bold', textAlign: 'center', fontSize: 50 }}>Multiplication Tables Game</Text>
                     </View>
                     <View style={{ flex: 1, }}>
-                        <Button style={styles.greenBtn} onPress={() => this.props.navigation.navigate('Game', { timer: this.state.timer })}>Start</Button>
-                        <Button style={styles.greenBtn} onPress={() => this.props.navigation.navigate('Options', { timer: this.state.timer })}>Options</Button>
+                        <Button style={styles.greenBtn} onPress={() => {
+
+                            navigate('Game', { timer: this.state.timer, waitingTime: this.state.waitingTime })
+                        }
+                        }>Start</Button>
+                        <Button style={styles.greenBtn} onPress={() => navigate('Options', { timer: this.state.timer, waitingTime: this.state.waitingTime })}>Options</Button>
                     </View>
 
                 </View>
