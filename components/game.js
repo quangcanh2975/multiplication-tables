@@ -39,6 +39,17 @@ export default class Board extends Component {
   _isMounted = false;
   constructor(props) {
     super(props);
+    var initialTables = this.props.navigation.getParam('selectedTables', [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+    ]);
     this.state = {
       start: false,
       currentQuestion: 0,
@@ -48,19 +59,23 @@ export default class Board extends Component {
       choices: [],
       isTimer: this.props.navigation.getParam('timer', true),
       countDownTime: this.props.navigation.getParam('waitingTime', 3) * 1000,
-      firstNumber: getRandomNumberInRange(1, 10),
+      selectedTables: initialTables,
+      firstNumber: getRamdomNumberOfSelectedTables(initialTables),
+      // secondNumber: getRandomNumberInRange(initialTables),
+      // firstNumber: getRandomNumberInRange(1, 10),
       secondNumber: getRandomNumberInRange(1, 10),
       wherePressed: [0, 0, 0, 0],
       isRight: false,
       rightAnswer: -1,
+      questionRange: [],
     };
   }
-
 
   componentWillUnmount() {
     this._isMounted = false;
   }
   _getRandomQuestion() {
+    var a, b;
     if (this.state.currentQuestion === numberOfQuestion) {
       this.setState({
         start: false,
@@ -74,8 +89,13 @@ export default class Board extends Component {
     }
     // Below is finishGame
     if (this.state.start) {
-      var a = getRandomNumberInRange(1, 10),
+      //old way to get number
+      // var a = getRandomNumberInRange(1, 10),
+      //   b = getRandomNumberInRange(1, 10);
+      do {
+        a = getRamdomNumberOfSelectedTables(this.state.selectedTables);
         b = getRandomNumberInRange(1, 10);
+      } while (checkQuestionRange([a, b], this.state.questionRange));
       this._setAnswers(1, a, b);
       return;
     }
@@ -102,9 +122,12 @@ export default class Board extends Component {
         choices: [...answers],
         wherePressed: [0, 0, 0, 0],
         isRight: false,
+        questionRange: [
+          ...this.state.questionRange,
+          [_firstNumber, _secondNumber],
+        ],
       });
-    }
-    else {
+    } else {
       this.setState({
         start: true,
         currentQuestion: 1,
@@ -117,6 +140,7 @@ export default class Board extends Component {
         choices: [...answers],
         wherePressed: [0, 0, 0, 0],
         isRight: false,
+        questionRange: [[_firstNumber, _secondNumber]],
       });
     }
     // check answer automatically for timer this is really OK
@@ -142,7 +166,6 @@ export default class Board extends Component {
     }
   }
   _checkAnswer(event, userAnswer) {
-    // console.log('Checking answer');
     // checking where press the button
     clearTimeout(setTimeOutFunction);
     this._getPressedPosition(userAnswer); // get where user press in [A,B,C,D] before continue
@@ -185,7 +208,13 @@ export default class Board extends Component {
         <NavigationEvents
           onWillFocus={() => {
             this._isMounted = true;
-            this._setAnswers(0, getRandomNumberInRange(1, 10), getRandomNumberInRange(1, 10));
+            this._setAnswers(
+              0,
+              getRamdomNumberOfSelectedTables(this.state.selectedTables),
+              // getRamdomNumberOfSelectedTables(this.state.selectedTables)
+              // getRandomNumberInRange(1, 10),
+              getRandomNumberInRange(1, 10)
+            );
           }}
         />
         <Score
@@ -274,5 +303,37 @@ function shuffle(array) {
 }
 
 function getRandomNumberInRange(a, b) {
-  return Math.floor(Math.random() * b + a);
+  return Math.floor(Math.random() * (b - a + 1) + a);
+}
+
+function getTablesRange(arr) {
+  let result = [];
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] === true) {
+      result.push(i + 1);
+    }
+  }
+  return result;
+}
+
+function getRamdomNumberOfSelectedTables(arr) {
+  var tablesRange = getTablesRange(arr);
+  var index = getRandomNumberInRange(0, tablesRange.length - 1); // get a random index of array
+  return tablesRange[index];
+}
+
+function isExisted(newQuestion, oldQuestion) {
+  if (newQuestion[0] === oldQuestion[0] && newQuestion[1] === oldQuestion[1]) {
+    return true;
+  }
+  return false;
+}
+
+function checkQuestionRange(newQuestion, existedQuestion) {
+  for (let i = 0; i < existedQuestion.length; i++) {
+    if (isExisted(newQuestion, existedQuestion[i])) {
+      return true;
+    }
+  }
+  return false;
 }
